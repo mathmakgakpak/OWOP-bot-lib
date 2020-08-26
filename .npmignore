@@ -7,5 +7,5 @@ yarn-error.log
 src
 examples
 
-jsdoc.config.js
+jsdoc.conf.js
 webpack.config.js
