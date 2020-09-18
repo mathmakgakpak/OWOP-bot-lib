@@ -38,7 +38,7 @@ function genConfig(buildFor, isProductionBuild) {
         output: {
             filename: `[name].${buildFor}${isProductionBuild ? ".min" : ""}.js`,
             path: path.resolve(__dirname, "build"),
-            //pathinfo: true,
+            pathinfo: true,
             publicPath: isProductionBuild ? '/' : './',
             library: "OWOPBotLib",
             libraryTarget: isNodeBuild ? "commonjs2" : undefined
@@ -84,12 +84,12 @@ function genConfig(buildFor, isProductionBuild) {
     };
 
     if(isNodeBuild) {
-        if(isProductionBuild) config.plugins.push(new JsDocPlugin({
+        /*if(isProductionBuild)*/ /*config.plugins.push(new JsDocPlugin({
             conf: 'jsdoc.conf.js',
             cwd: '.',
             preserveTmpFile: false,
             recursive: false
-        }));
+        }));*/
     } else {
         delete config.externals.canvas;
     }
@@ -110,10 +110,10 @@ module.exports[0] = (env = {}) => {
     
     const config = genConfig(buildFor, isProductionBuild);
 
-    if(isProductionBuild || env.devclean) {
+    /*if(isProductionBuild || env.devclean) {
         console.log(`Cleaning build dir: '${config.output.path}'`);
         fs.removeSync(config.output.path);
-    }
+    }*/
 
     return config;
 }

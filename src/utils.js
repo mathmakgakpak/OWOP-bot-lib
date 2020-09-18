@@ -10,7 +10,7 @@ const hypot = Math.hypot;
  * @param {number} y2 - y2.
  */
 export function distance(x1, y1, x2, y2) {
-  return hypot(x2-x1, y2-y1);
+  return hypot(x2 - x1, y2 - y1);
 };
 
 /**
@@ -19,25 +19,25 @@ export function distance(x1, y1, x2, y2) {
  * @param {Buffer} buffer - node.js / browser buffer implementation buffer.
  */
 export class AutoOffsetBuffer { // not really only 2 methods
-	constructor(buffer) {
-		this.offset = 0;
-		this.buffer = buffer;
-	}
+  constructor(buffer) {
+    this.offset = 0;
+    this.buffer = buffer;
+  }
 
   /**
    * set uint
    * 
    * @param {number} value - value to write
-   * @param {?number} byteLength - byteLength to write
-   * @param {?boolean} littleEndian - bytes saving type {@link https://en.wikipedia.org/wiki/Endianness (read this)}
-   * @param {?number} offset - number of offset which it should write
-   * @param {?boolean} addToOffset - if it should set current offset to offset param's value + byteLength
+   * @param {number} [byteLength=1] - byteLength to write
+   * @param {?boolean} [littleEndian=true] - bytes saving type {@link https://en.wikipedia.org/wiki/Endianness (read this)}
+   * @param {?number} [offset=this.offset] - number of offset which it should write
+   * @param {?boolean} [addToOffset=true] - if it should set current offset to offset param's value + byteLength
    */
   setUint(value, byteLength = 1, littleEndian = true, offset = this.offset, addToOffset = true) {
-    if(littleEndian) this.buffer.writeUIntLE(value, offset, byteLength);
+    if (littleEndian) this.buffer.writeUIntLE(value, offset, byteLength);
     else this.buffer.writeUIntBE(value, offset, byteLength);
 
-    if(addToOffset) this.offset = offset + byteLength;
+    if (addToOffset) this.offset = offset + byteLength;
   }
   /**
    * set int
@@ -49,10 +49,10 @@ export class AutoOffsetBuffer { // not really only 2 methods
    * @param {?boolean} addToOffset - if it should set current offset to offset param's value + byteLength
    */
   setInt(value, byteLength = 1, littleEndian = true, offset = this.offset, addToOffset = true) {
-    if(littleEndian) this.buffer.writeIntLE(value, offset, byteLength);
+    if (littleEndian) this.buffer.writeIntLE(value, offset, byteLength);
     else this.buffer.writeIntBE(value, offset, byteLength);
 
-    if(addToOffset) this.offset = offset + byteLength;
+    if (addToOffset) this.offset = offset + byteLength;
   }
   /**
    * get uint
@@ -64,9 +64,9 @@ export class AutoOffsetBuffer { // not really only 2 methods
    */
   getUint(byteLength = 1, littleEndian = true, offset = this.offset, addToOffset = true) {
     let data = littleEndian ? this.buffer.readUIntLE(offset, byteLength) :
-     this.buffer.readUIntBE(offset, byteLength);
+      this.buffer.readUIntBE(offset, byteLength);
 
-    if(addToOffset) this.offset = offset + byteLength;
+    if (addToOffset) this.offset = offset + byteLength;
     return data;
   }
   /**
@@ -79,9 +79,9 @@ export class AutoOffsetBuffer { // not really only 2 methods
    */
   getInt(byteLength = 1, littleEndian = true, offset = this.offset, addToOffset = true) {
     let data = littleEndian ? this.buffer.readIntLE(offset, byteLength) :
-     this.buffer.readIntBE(offset, byteLength);
+      this.buffer.readIntBE(offset, byteLength);
 
-    if(addToOffset) this.offset = offset + byteLength;
+    if (addToOffset) this.offset = offset + byteLength;
     return data;
   }
   // 
@@ -201,7 +201,7 @@ export class AutoOffsetBuffer { // not really only 2 methods
   }
   setText(text, offset = this.offset) {
     //text.splice(4294967296); // Math.pow(2, 32) // not really needed it will do it self
-    let length = this.setUint32(text.length, offset);
+    this.setUint32(text.length, offset);
     
     for(let i = 0; i < text.length; i++) this.setUint32(text.charCodeAt(i));
     return length;
@@ -213,8 +213,17 @@ AutoOffsetBuffer.prototype.writeInt = AutoOffsetBuffer.prototype.setInt;
 AutoOffsetBuffer.prototype.readUInt = AutoOffsetBuffer.prototype.getUint;
 AutoOffsetBuffer.prototype.readInt = AutoOffsetBuffer.prototype.getInt;
 
+
 export class Bucket {
+  /**
+   * 
+   * @param {number} rate 
+   * @param {number} per 
+   * @param {boolean} infinite 
+   */
   constructor(rate, per, infinite) {
+    //infinite = per === 0 && rate > 0;
+
     this.lastCheck = Date.now();
     this.allowance = 0;
     this.rate = rate;
@@ -241,66 +250,87 @@ export class Bucket {
     return true;
   }
 }
+/**
+ * 
+ * @param {number} x 
+ * @param {number} y 
+ * @param {number} w 
+ * @param {boolean} alpha - is alpha 
+ */
 export function getIbyXY(x, y, w, alpha) {
   return (y * w + x) * (alpha ? 4 : 3);
 }
 const floor = Math.floor;
 
+
 export class ChunkSystem {
-    constructor() {
-        this.chunks = {};
-        this.chunkProtected = {};
-    };
+  constructor() {
+    this.chunks = {};
+    this.chunkProtected = {};
+  };
 
-    setChunk(x, y, data) {
-        //if (!data || typeof x !== "number" || typeof y !== "number") throw new Error("x or y is not a number or no data!");
+  /**
+   * 
+   * @param {number} chunkX - 
+   * @param {number} chunkY 
+   * @param {Uint8ClampedArray} data 
+   */
+  setChunk(chunkX, chunkY, data) {
+    //if (!data || typeof chunkX !== "number" || typeof chunkY !== "number") throw new Error("chunkX or chunkY is not a number or no data!");
 
-        return this.chunks[x + "," + y] = data;
-    };
-    getChunk(x, y) {
-        return this.chunks[x + "," + y];
-    };
-    removeChunk(x, y) {
-        return delete this.chunks[x + "," + y];
-    };
-    setPixel(x, y, rgb) {
-        //if (typeof rgb !== "object" || typeof x !== "number" || typeof y !== "number") throw new Error("x or y is not a number or rgb is not array!");
-        const chunkX = floor(x / chunkSize);
-        const chunkY = floor(y / chunkSize);
+    return this.chunks[chunkX + "," + chunkY] = data;
+  };
+  getChunk(chunkX, chunkY) {
+    return this.chunks[chunkX + "," + chunkY];
+  };
+  removeChunk(chunkX, chunkY) {
+    return delete this.chunks[chunkX + "," + chunkY];
+  };
+  setPixel(x, y, color) {
+    //if (typeof rgb !== "object" || typeof chunkX !== "number" || typeof chunkY !== "number") throw new Error("chunkX or chunkY is not a number or rgb is not array!");
+    const chunkX = floor(x / chunkSize);
+    const chunkY = floor(y / chunkSize);
 
-        const chunk = this.getChunk(chunkX, chunkY);
-        if (!chunk) return;
+    const chunk = this.getChunk(chunkX, chunkY);
 
-        const i = getIbyXY(x & chunkSize - 1, y & chunkSize - 1, chunkSize);
+    if (chunk) {
+      const i = getIbyXY(x & chunkSize - 1, y & chunkSize - 1, chunkSize);
 
-        chunk[i] = rgb[0];
-        chunk[i + 1] = rgb[1];
-        chunk[i + 2] = rgb[2];
-        return true;
-    };
-    getPixel(x, y) {
-        //if (typeof x !== "number" || typeof y !== "number") throw new Error("x or y is not a number!");
-        const chunkX = floor(x / chunkSize);
-        const chunkY = floor(y / chunkSize);
+      chunk[i] = color[0];
+      chunk[i + 1] = color[1];
+      chunk[i + 2] = color[2];
 
-        const chunk = this.getChunk(chunkX, chunkY);
-
-        if (!chunk) return;
-
-        const i = getIbyXY(x & chunkSize - 1, y & chunkSize - 1, chunkSize);
-        return [chunk[i], chunk[i + 1], chunk[i + 2]];
-    };
-    setChunkProtection(x, y, newState) {
-        //if (typeof x !== "number" || typeof y !== "number") throw new Error("x or y is not a number!");
-
-        if (newState) this.chunkProtected[x + "," + y] = true;
-        else delete this.chunkProtected[x + "," + y];
-        return true;
+      return true;
     }
-    isProtected(x, y) {
-        //if (typeof x !== "number" || typeof y !== "number") throw new Error("x or y is not a number!");
-        return !!this.chunkProtected[x + "," + y];
+
+    
+  }
+  getPixel(x, y) {
+    //if (typeof x !== "number" || typeof y !== "number") throw new Error("x or y is not a number!");
+    const chunkX = floor(x / chunkSize);
+    const chunkY = floor(y / chunkSize);
+
+    const chunk = this.getChunk(chunkX, chunkY);
+
+    if (chunk) {
+      const i = getIbyXY(x & chunkSize - 1, y & chunkSize - 1, chunkSize);
+      return [chunk[i], chunk[i + 1], chunk[i + 2]];
     }
+  };
+  setChunkProtection(chunkX, chunkY, newState) {
+    //if (typeof chunkX !== "number" || typeof chunkY !== "number") throw new Error("chunkX or chunkY is not a number!");
+
+    if (newState) {
+      return this.chunkProtected[chunkX + "," + chunkY] = true;
+    } else {
+      delete this.chunkProtected[chunkX + "," + chunkY]
+      return false;
+    }
+  }
+  isProtected(chunkX, chunkY) {
+    //if (typeof chunkX !== "number" || typeof chunkY !== "number") throw new Error("chunkX or chunkY is not a number!");
+    return !!this.chunkProtected[chunkX + "," + chunkY];
+  }
 }
 
 /*export class World extends ChunkSystem {
@@ -312,43 +342,43 @@ export class ChunkSystem {
 }*/
 
 export function decompress(u8arr) {
-    var originalLength = u8arr[1] << 8 | u8arr[0];
-    var u8decompressedarr = new Uint8ClampedArray(originalLength);
-    var numOfRepeats = u8arr[3] << 8 | u8arr[2];
-    var offset = numOfRepeats * 2 + 4;
-    var uptr = 0;
-    var cptr = offset;
-    for (var i = 0; i < numOfRepeats; i++) {
-        var currentRepeatLoc = (u8arr[4 + i * 2 + 1] << 8 | u8arr[4 + i * 2]) + offset;
-        while (cptr < currentRepeatLoc) {
-            u8decompressedarr[uptr++] = u8arr[cptr++];
-        }
-        var repeatedNum = u8arr[cptr + 1] << 8 | u8arr[cptr];
-        var repeatedColorR = u8arr[cptr + 2];
-        var repeatedColorG = u8arr[cptr + 3];
-        var repeatedColorB = u8arr[cptr + 4];
-        cptr += 5;
-        while (repeatedNum--) {
-            u8decompressedarr[uptr] = repeatedColorR;
-            u8decompressedarr[uptr + 1] = repeatedColorG;
-            u8decompressedarr[uptr + 2] = repeatedColorB;
-            uptr += 3;
-        }
+  var originalLength = u8arr[1] << 8 | u8arr[0];
+  var u8decompressedarr = new Uint8ClampedArray(originalLength);
+  var numOfRepeats = u8arr[3] << 8 | u8arr[2];
+  var offset = numOfRepeats * 2 + 4;
+  var uptr = 0;
+  var cptr = offset;
+  for (var i = 0; i < numOfRepeats; i++) {
+    var currentRepeatLoc = (u8arr[4 + i * 2 + 1] << 8 | u8arr[4 + i * 2]) + offset;
+    while (cptr < currentRepeatLoc) {
+      u8decompressedarr[uptr++] = u8arr[cptr++];
     }
-    while (cptr < u8arr.length) {
-        u8decompressedarr[uptr++] = u8arr[cptr++];
+    var repeatedNum = u8arr[cptr + 1] << 8 | u8arr[cptr];
+    var repeatedColorR = u8arr[cptr + 2];
+    var repeatedColorG = u8arr[cptr + 3];
+    var repeatedColorB = u8arr[cptr + 4];
+    cptr += 5;
+    while (repeatedNum--) {
+      u8decompressedarr[uptr] = repeatedColorR;
+      u8decompressedarr[uptr + 1] = repeatedColorG;
+      u8decompressedarr[uptr + 2] = repeatedColorB;
+      uptr += 3;
     }
-    return u8decompressedarr;
+  }
+  while (cptr < u8arr.length) {
+    u8decompressedarr[uptr++] = u8arr[cptr++];
+  }
+  return u8decompressedarr;
 }
 
 export function createChunkFromRGB(color) {
-    let tile = new Uint8ClampedArray(chunkSize * chunkSize * 3);
-    for (var i = 0; i < tile.length;) {
-        tile[i++] = color[0];
-        tile[i++] = color[1];
-        tile[i++] = color[2];
-    }
-    return tile;
+  let tile = new Uint8ClampedArray(chunkSize * chunkSize * 3);
+  for (var i = 0; i < tile.length;) {
+    tile[i++] = color[0];
+    tile[i++] = color[1];
+    tile[i++] = color[2];
+  }
+  return tile;
 }
 
 const chunkx3 = chunkSize * 3;
@@ -357,14 +387,14 @@ export function shouldMove(x1, y1, x2, y2) {
 }
 
 export function isWSConnected(ws) {
-  return !!ws && ws.readyState === 1;
+  return ws && ws.readyState === 1;
 }
 
 export function reverseObject(obj) {
   const reversedObject = {};
 
-  for(let i in obj) reversedObject[obj[i]] = i;
-  
+  for (let i in obj) reversedObject[obj[i]] = i;
+
   return reversedObject;
 }
 
@@ -407,8 +437,14 @@ export const deepClone = (inObject) => {
 }
 
 let a = gameSettings.worldBorder;
-let b =  ~a;
+let b = ~a;
 
+/**
+ * Checks if x and y are inside world Border
+ * 
+ * @param {number} x 
+ * @param {number} y 
+ */
 export function isInsideWorldBorder(x, y) {
   return x <= a && y <= a && x >= b && y >= b;
 }
@@ -417,6 +453,13 @@ export function isInsideWorldBorder(x, y) {
   0-3 - normal owop ranks
   4 - discord
 */
+/**
+ * parses message
+ * 
+ * @param {message} msg 
+ * 
+ * @returns {array} ?user(Object)[?id, rank, nick], ?message (string), ?is tellMessage (boolean), original message (string)
+ */
 export function parseMessage(msg) { // maybe someone will use it
   let something = msg.split(": ");
 

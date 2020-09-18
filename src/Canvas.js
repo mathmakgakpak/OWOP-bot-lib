@@ -13,14 +13,15 @@ if(!process.env.isNodeBuild) {
     DOMMatrix,
     DOMPoint,
   });
-  HTMLCanvasElement.prototype.toArrayBuffer = function() {
-    return this.getContext("2d")
-    .getImageData(0, 0, this.width, this.height).data.buffer;
+  const BufferFrom = Buffer.from;
+  Canvas.Context2d.prototype.toBuffer = function toBuffer() {
+      return BufferFrom(this.getImageData(0, 0, this.width, this.height).data);
   }
-  HTMLCanvasElement.prototype.toBuffer = function() { // you should not use it
-    return Buffer.from(this.toArrayBuffer());
+  HTMLCanvasElement.prototype.toBuffer = function toBuffer() { // you should not use it because it is not same as node-canvas implementation
+    return this.getContext("2d").toBuffer();
   }
 }
+
 
 
 
@@ -32,15 +33,21 @@ function imageDataToCtx(imageData) {
 }
 Canvas.imageDataToCtx = imageDataToCtx;
 
+
+
 Canvas.ImageData.prototype.toCtx = function toCtx() {
   return imageDataToCtx(this);
 }
+
+
+
 
 Canvas.Context2d.prototype.getCtx = function getCtx(x, y, width, height) {
   return imageDataToCtx(this.getImageData(x, y, width, height));
 }
 
 const round = Math.round;
+
 
 function _lerp(color1, color2, factor = 0.5) {
   return round(color1 + (color2 - color1) * factor);

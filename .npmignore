@@ -1,11 +1,5 @@
-node_modules
-package-lock.json
-
-yarn.lock
-yarn-error.log
-
-src
-examples
-
-jsdoc.conf.js
-webpack.config.js
+*
+!DOCS.MD
+#!LICENSE it will not be ignored anyways
+!build/index.NodeJS.js
+!build/index.NodeJS.min.js

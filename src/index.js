@@ -8,6 +8,11 @@ isNodeBuild = process.env.isNodeBuild;
 // remember use global instead of window in webpack
 // String.prototype.map = Array.prototype.map; // not needed anymore
 
+
+
+
+
+
 export * as Canvas from "./Canvas";
 
 
