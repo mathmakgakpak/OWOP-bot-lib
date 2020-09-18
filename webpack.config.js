@@ -41,7 +41,7 @@ function genConfig(buildFor, isProductionBuild) {
             pathinfo: true,
             publicPath: isProductionBuild ? '/' : './',
             library: "OWOPBotLib",
-            libraryTarget: isNodeBuild ? "commonjs2" : undefined
+            libraryTarget: "commonjs2"
         },
         module: {
             rules: [
