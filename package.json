@@ -1,7 +1,7 @@
 {
   "name": "owop-bot-lib",
-  "version": "0.4.1",
-  "build": 182,
+  "version": "0.4.6",
+  "build": 195,
   "description": "browser/Node JS package for creating OWOP bots",
   "main": "build/index.NodeJS.min.js",
   "scripts": {
