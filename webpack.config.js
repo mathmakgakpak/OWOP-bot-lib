@@ -77,13 +77,15 @@ function genConfig(buildFor, isProductionBuild) {
 
             
         ],
-        externals: {
-            canvas: "canvas", // ok wtf why when i set it to {} it requires undefined
-            ws: "ws"
-        }
+        externals: {}
     };
 
+    
     if(isNodeBuild) {
+        config.externals.ws = "commonjs2 ws";
+
+        
+
         /*if(isProductionBuild)*/ /*config.plugins.push(new JsDocPlugin({
             conf: 'jsdoc.conf.js',
             cwd: '.',
@@ -91,9 +93,8 @@ function genConfig(buildFor, isProductionBuild) {
             recursive: false
         }));*/
     } else {
-        delete config.externals.canvas;
+        config.externals.ws = {};
     }
-
     return config;
 }
 
@@ -110,13 +111,15 @@ module.exports[0] = (env = {}) => {
     
     const config = genConfig(buildFor, isProductionBuild);
 
-    /*if(isProductionBuild || env.devclean) {
+    if(/*isProductionBuild || */env.devclean) {
         console.log(`Cleaning build dir: '${config.output.path}'`);
         fs.removeSync(config.output.path);
-    }*/
+    }
 
     return config;
 }
+
+
 module.exports[1] = (env = {}) => {
     const isProductionBuild = !!env.production;
     const buildFor = "browser";

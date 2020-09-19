@@ -1,7 +1,7 @@
 {
   "name": "owop-bot-lib",
-  "version": "0.5.0",
-  "build": 199,
+  "version": "0.5.3",
+  "build": 210,
   "description": "browser/Node JS package for creating OWOP bots",
   "main": "build/index.NodeJS.min.js",
   "browser": "build/index.browser.min.js",
@@ -27,7 +27,6 @@
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
-    "canvas": "^2.6.1",
     "ws": "^7.3.1"
   },
   "repository": "https://github.com/mathmakgakpak/OWOP-bot-lib"

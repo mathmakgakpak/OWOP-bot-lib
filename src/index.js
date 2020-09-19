@@ -13,7 +13,7 @@ isNodeBuild = process.env.isNodeBuild;
 
 
 
-export * as Canvas from "./Canvas";
+//export * as Canvas from "./Canvas"; not used
 
 
 export * as utils from "./utils";
