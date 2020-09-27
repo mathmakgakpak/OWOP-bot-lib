@@ -19,7 +19,8 @@ isNodeBuild = process.env.isNodeBuild;
 export * as utils from "./utils";
 export { default as Client } from "./Client";
 export { default as gameSettings } from "./gameSettings";
-export { default as WebSocket } from "./WebSocket";
+export { default as WebSocket } from "isomorphic-ws";
+export { default as EventEmitter } from "events";
 
 __webpack_exports__.Buffer = Buffer;
 

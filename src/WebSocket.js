@@ -1,1 +1,0 @@
-export default process.env.isNodeBuild ? require("ws") : global.WebSocket; // i know about isomorphic-ws package but i will not use it

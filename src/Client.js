@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import gameSettings from "./gameSettings";
-import WS from "./WebSocket";
+import WS from "isomorphic-ws";
 import { isWSConnected, createChunkFromRGB, shouldMove, Bucket, AutoOffsetBuffer, ChunkSystem, decompress, deepClone, isInsideWorldBorder, getIbyXY } from "./utils";
 import { WEBSOCKET_IS_NOT_CONNECTED, REQUEST_CHUNK_OUTSIDE_WORLD_BORDER, TOO_LOW_PERMISSION, CANNOT_SPEND } from "./errorsList";
 const { RANK, chunkSize } = gameSettings;

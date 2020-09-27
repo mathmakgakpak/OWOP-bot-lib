@@ -82,7 +82,7 @@ function genConfig(buildFor, isProductionBuild) {
 
     
     if(isNodeBuild) {
-        config.externals.ws = "commonjs2 ws";
+        config.externals["isomorphic-ws"] = "commonjs2 isomorphic-ws";
 
         
 
