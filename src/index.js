@@ -1,5 +1,7 @@
 //export const { build, version, buildFor, isNodeBuild } = process.env; // uhh there is a bug it does process$env = process.env and doesn't even add process for browser
 
+console.log(Buffer.alloc(23));
+
 export const build = process.env.build, 
 version = process.env.version, 
 buildFor = process.env.buildFor, 
@@ -22,10 +24,10 @@ export { default as gameSettings } from "./gameSettings";
 export { default as WebSocket } from "isomorphic-ws";
 export { default as EventEmitter } from "events";
 
-__webpack_exports__.Buffer = Buffer;
+__webpack_exports__.Buffer = Buffer; // Buffer is not defined
 
 if(!process.env.isNodeBuild && global.OPM) {
-    __webpack_exports__.install = () => {
+    __webpack_exports__.install = () => { // export must be at top level :drrr:
         console.log("OWOP bot lib is installed");
     }
     __webpack_exports__.uninstall = () => {

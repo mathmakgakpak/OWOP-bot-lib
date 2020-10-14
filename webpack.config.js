@@ -38,7 +38,7 @@ function genConfig(buildFor, isProductionBuild) {
         output: {
             filename: `[name].${buildFor}${isProductionBuild ? ".min" : ""}.js`,
             path: path.resolve(__dirname, "build"),
-            pathinfo: true,
+            pathinfo: true/*!isProductionBuild*/,
             publicPath: isProductionBuild ? '/' : './',
             library: "OWOPBotLib",
             libraryTarget: "commonjs2"
@@ -50,9 +50,10 @@ function genConfig(buildFor, isProductionBuild) {
 				//exclude: path.resolve(__dirname, "node_modules"),
 				  use: {
 					loader: 'babel-loader',
-					options: {
-					 // presets: ['@babel/preset-env']
-					}
+					options: { // .babelrc
+                        "presets": ["@babel/preset-env"],
+                        "plugins": ["@babel/plugin-proposal-export-namespace-from", "@babel/plugin-proposal-class-properties"/*ignore the weirdo error it works*/, "@babel/plugin-transform-runtime"]
+                      }
 				  }
 				}
             ]
@@ -94,6 +95,46 @@ function genConfig(buildFor, isProductionBuild) {
         }));*/
     } else {
         config.externals.ws = {};
+
+        config.resolve = {
+            alias: { // https://github.com/webpack/webpack/issues/11282
+                assert: "assert",
+                buffer: "buffer",
+                console: "console-browserify",
+                constants: "constants-browserify",
+                crypto: "crypto-browserify",
+                domain: "domain-browser",
+                events: "events",
+                http: "stream-http",
+                https: "https-browserify",
+                os: "os-browserify/browser",
+                path: "path-browserify",
+                punycode: "punycode",
+                process: "process/browser",
+                querystring: "querystring-es3",
+                stream: "stream-browserify",
+                _stream_duplex: "readable-stream/duplex",
+                _stream_passthrough: "readable-stream/passthrough",
+                _stream_readable: "readable-stream/readable",
+                _stream_transform: "readable-stream/transform",
+                _stream_writable: "readable-stream/writable",
+                string_decoder: "string_decoder",
+                sys: "util",
+                timers: "timers-browserify",
+                tty: "tty-browserify",
+                url: "url",
+                util: "util",
+                vm: "vm-browserify",
+                zlib: "browserify-zlib"
+            }
+        };
+
+        config.plugins.push(
+            new webpack.ProvidePlugin({
+                'Buffer': ["buffer", "Buffer"],
+                
+            })
+        )
     }
     return config;
 }

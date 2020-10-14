@@ -327,8 +327,8 @@ export default class Client extends EventEmitter {
 
     const buf = BufferAllocUnsafe(clientOpcodes.playerUpdate);
 
-    buf.writeUInt32LE(x * 16);
-    buf.writeUInt32LE(y * 16, 4);
+    buf.writeInt32LE(x * 16);
+    buf.writeInt32LE(y * 16, 4);
 
     buf.writeUInt8(color[0], 8);
     buf.writeUInt8(color[1], 9);
@@ -523,7 +523,7 @@ export default class Client extends EventEmitter {
    * @param {number} chunkX 
    * @param {number} chunkY 
    */
-  async requestChunk(chunkX = this.player.chunkX, chunkY = this.player.chunkY) { // async is here because if chunk is loaded bot.requestChunk(0, 0).then would not exist
+  async requestChunk(chunkX = this.player.chunkX, chunkY = this.player.chunkY) { // async is here because if chunk is loaded bot.requestChunk(0, 0) would not be promise
     if (!isWSConnected(this.ws)) throw new Error(WEBSOCKET_IS_NOT_CONNECTED);
     if (!this.options.unsafe && !isInsideWorldBorder(chunkX, chunkY)) throw new Error(REQUEST_CHUNK_OUTSIDE_WORLD_BORDER);
 
