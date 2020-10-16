@@ -19,7 +19,7 @@ const { allocUnsafe: BufferAllocUnsafe, from: BufferFrom } = Buffer;
 // with buffer.allocUnsafe it will work faster and it fill all data so i'm sure that it will not leak anythign
 
 
-export default class Client extends EventEmitter {
+class Client extends EventEmitter {
   static defaultOptions = {
     wsUrl: "wss://ourworldofpixels.com",
     captchaSiteKey: "6LcgvScUAAAAAARUXtwrM8MP0A0N70z4DHNJh-KI",
@@ -603,6 +603,8 @@ export default class Client extends EventEmitter {
 
 
 // experiment so Client can be invoked without new
-const old = Client;
-Client = (...args) => new old(...args);
-Client.prototype = old.prototype;
+const _Client = Client;
+Client = (options) => new _Client(options);
+Client.prototype = _Client.prototype;
+
+export default Client;

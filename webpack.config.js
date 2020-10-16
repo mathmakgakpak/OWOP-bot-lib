@@ -23,7 +23,33 @@ function addToVersion(version, number = 1) { // dumb
 
 const srcDir = path.resolve(__dirname, "src");
 
-module.exports = [];
+module.exports = [(env = "development") => {
+    const isProductionBuild = env === "production";
+    const buildFor = "NodeJS";
+
+    if (isProductionBuild) packageJSON.version = version = addToVersion(version);
+    packageJSON.build = ++build;
+
+    fs.writeFileSync("./package.json", JSON.stringify(packageJSON, null, 2));
+
+    
+    const config = genConfig(buildFor, isProductionBuild);
+
+    if(/*isProductionBuild || */env.devclean) {
+        console.log(`Cleaning build dir: '${config.output.path}'`);
+        fs.removeSync(config.output.path);
+    }
+
+    return config;
+}, (env = "development") => {
+    const isProductionBuild = env === "production";
+    const buildFor = "browser";
+    const config = genConfig(buildFor, isProductionBuild);
+
+    console.log(`${config.mode} build\nVersion: ${version}\nBuild: ${build}\n`);
+
+    return config;
+}];
 
 function genConfig(buildFor, isProductionBuild) {
     const isNodeBuild = buildFor === "NodeJS";
@@ -38,7 +64,6 @@ function genConfig(buildFor, isProductionBuild) {
         output: {
             filename: `[name].${buildFor}${isProductionBuild ? ".min" : ""}.js`,
             path: path.resolve(__dirname, "build"),
-            pathinfo: true/*!isProductionBuild*/,
             publicPath: isProductionBuild ? '/' : './',
             library: "OWOPBotLib",
             libraryTarget: "commonjs2"
@@ -52,7 +77,7 @@ function genConfig(buildFor, isProductionBuild) {
 					loader: 'babel-loader',
 					options: { // .babelrc
                         "presets": ["@babel/preset-env"],
-                        "plugins": ["@babel/plugin-proposal-export-namespace-from", "@babel/plugin-proposal-class-properties"/*ignore the weirdo error it works*/, "@babel/plugin-transform-runtime"]
+                        "plugins": ["@babel/plugin-proposal-export-namespace-from", "@babel/plugin-proposal-class-properties", "@babel/plugin-transform-runtime"]
                       }
 				  }
 				}
@@ -73,10 +98,7 @@ function genConfig(buildFor, isProductionBuild) {
 @discord  mathias377#3326
 @author   mathias377
 @license  MIT`
-            }),
-            // TO-DO learn how to use this
-
-            
+            })
         ],
         externals: {}
     };
@@ -136,37 +158,5 @@ function genConfig(buildFor, isProductionBuild) {
             })
         )
     }
-    return config;
-}
-
-// NodeJS
-module.exports[0] = (env = {}) => {
-    const isProductionBuild = !!env.production;
-    const buildFor = "NodeJS";
-
-    if (isProductionBuild) packageJSON.version = version = addToVersion(version);
-    packageJSON.build = ++build;
-
-    fs.writeFileSync("./package.json", JSON.stringify(packageJSON, null, 2));
-
-    
-    const config = genConfig(buildFor, isProductionBuild);
-
-    if(/*isProductionBuild || */env.devclean) {
-        console.log(`Cleaning build dir: '${config.output.path}'`);
-        fs.removeSync(config.output.path);
-    }
-
-    return config;
-}
-
-
-module.exports[1] = (env = {}) => {
-    const isProductionBuild = !!env.production;
-    const buildFor = "browser";
-    const config = genConfig(buildFor, isProductionBuild);
-
-    console.log(`${config.mode} build\nVersion: ${version}\nBuild: ${build}\n`);
-
     return config;
 }
