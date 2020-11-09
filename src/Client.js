@@ -4,19 +4,12 @@ import WS from "isomorphic-ws";
 import { isWSConnected, createChunkFromRGB, shouldMove, Bucket, AutoOffsetBuffer, ChunkSystem, decompress, deepClone, isInsideWorldBorder, getIbyXY } from "./utils";
 import { WEBSOCKET_IS_NOT_CONNECTED, REQUEST_CHUNK_OUTSIDE_WORLD_BORDER, TOO_LOW_PERMISSION, CANNOT_SPEND } from "./errorsList";
 const { RANK, chunkSize } = gameSettings;
-//import {}
 const { client: clientOpcodes, server: serverOpCodes } = gameSettings.opCodes;
-
-
-/*function error(b) {
-  return process.env.errorsEnabled;
-}*/
 
 const chuchunk3 = chunkSize * chunkSize * 3; // buh the name
 
 const { floor, max } = Math;
 const { allocUnsafe: BufferAllocUnsafe, from: BufferFrom } = Buffer;
-// with buffer.allocUnsafe it will work faster and it fill all data so i'm sure that it will not leak anythign
 
 
 class Client extends EventEmitter {
@@ -33,10 +26,6 @@ class Client extends EventEmitter {
     worldVerification: gameSettings.misc.worldVerification
   }
 
-  /**
-   * 
-   * @param {Object} options - default options is Client.defaultOptions 
-   */
   constructor(options = {}) {
     super();
     const defaultOptionsDeepCopy = deepClone(Client.defaultOptions);
@@ -81,9 +70,7 @@ class Client extends EventEmitter {
 
     this.maxPlayersOnWorld = null;
   }
-  /**
-   * makes connection to owop
-   */
+
   makeSocket() {
     this.ws = new WS(this.options.wsUrl, process.env.isNodeBuild ? this.options.wsOptions : undefined);
 
@@ -213,6 +200,7 @@ class Client extends EventEmitter {
         }
         case serverOpCodes.setRank: {
           const rank = this.player.rank = buf.readUInt8(1);
+          this.ws.send(new Uint8Array([rank])); // verify rank
           this.emit("rank", rank);
 
           const quota = gameSettings.chatQuota[rank];
@@ -220,7 +208,7 @@ class Client extends EventEmitter {
 
           bucket.rate = quota[0];
           bucket.per = quota[1];
-          //bucket.allowance = 0; // idk if it restarts every set rank but i think that not
+          //bucket.allowance = 0; // idk if it restarts every set rank but i think that it does not
 
           bucket.infinite = this.player.pixelBucket.infinite = rank === 3;
 
@@ -262,12 +250,7 @@ class Client extends EventEmitter {
       }
     }
   }
-  /**
-   * Sends message/command to OWOP
-   * 
-   * @param {string} message message to send
-   * @returns {boolean} returns true if everything completed correctly
-   */
+
   sendMessage(message) {
     if (!isWSConnected(this.ws)) throw new Error(WEBSOCKET_IS_NOT_CONNECTED);
 
@@ -281,13 +264,9 @@ class Client extends EventEmitter {
     }
 
     this.ws.send(message + gameSettings.misc.chatVerification);
-    return true;
+    return this;
   }
-  /**
-   * join world function
-   * 
-   * @param {string} [name="main"] - name including only english letters, numbers, floor character(_) and dot
-   */
+
   join(name = "main") {
     if (!isWSConnected(this.ws)) throw new Error(WEBSOCKET_IS_NOT_CONNECTED);
     // TO-DO change dat because regex is slow
@@ -303,25 +282,16 @@ class Client extends EventEmitter {
 
     this.ws.send(buf);
 
-    return this.player.worldName = name;;
+    this.player.worldName = name;
+    
+    return this;
   }
 
-  /**
-   * disconnects from server
-   */
   leave() {
     /*if (isWSConnected(this.ws))*/ this.ws.close();
+    return this;
   }
-  /**
-   * Sends move, colorUpdate, toolUpdate in one packet
-   * 
-   * @param {number} [x=this.player.x] - x of player
-   * @param {number} [y=this.player.y] - y of player
-   * @param {Array} [color=this.player.color] - color idk how to explain dat 
-   * @param {number} [toolId=this.player.toolId] - tool same as upper
-   * 
-   * @returns {boolean} - returns true if completed correctly
-   */
+
   playerUpdate(x = this.player.x, y = this.player.y, color = this.player.color, toolId = this.player.toolId) {
     if (!isWSConnected(this.ws)) throw new Error(WEBSOCKET_IS_NOT_CONNECTED);
 
@@ -329,19 +299,27 @@ class Client extends EventEmitter {
 
     buf.writeInt32LE(x * 16);
     buf.writeInt32LE(y * 16, 4);
-
+    
     buf.writeUInt8(color[0], 8);
     buf.writeUInt8(color[1], 9);
     buf.writeUInt8(color[2], 10);
 
     buf.writeUInt8(toolId, 11);
-
-    this._setPosition(x, y);
-    this._setColor(color);
-    this._setTool(toolId);
+    
 
     this.ws.send(buf);
-    return true;
+
+    this.player.color[0] = color[0];
+    this.player.color[1] = color[1];
+    this.player.color[2] = color[2];
+
+    this.player.toolName = gameSettings.toolsNames[
+      this.player.tool = toolId
+    ];
+
+    this._setPosition(x, y);
+
+    return this;
   }
   _setPosition(x, y) {
     this.player.x = x;
@@ -350,51 +328,20 @@ class Client extends EventEmitter {
     this.player.chunkX = floor(x / chunkSize);
     this.player.chunkY = floor(y / chunkSize);
   }
-  /**
-   * Moves cursors
-   * 
-   * @param {number} x 
-   * @param {number} y 
-   * 
-   * @returns {boolean} - returns true if completed correctly
-   */
+
   move(x = this.player.x, y = this.player.y) {
     return this.playerUpdate(x, y);
   }
-  _setColor(color) {
-    this.player.color[0] = color[0];
-    this.player.color[1] = color[1];
-    this.player.color[2] = color[2];
-  }
-  /**
-   * Sets color of cursor
-   * 
-   * @param {array} color any Array
-   * 
-   * @returns {boolean} - returns true if completed correctly
-   */
+
   setColor(color = this.player.color) {
-    return this.playerUpdate(undefined, undefined, color);
+    this.playerUpdate(undefined, undefined, color);
+    return this;
   }
-  _setTool(toolId) {
-    this.player.toolName = gameSettings.toolsNames[this.player.tool = toolId];
-  }
-  /**
-   * Sets tool
-   * 
-   * @param {number} toolId 
-   * 
-   * @returns {boolean} - returns true if completed correctly
-   */
-  setTool(toolId = this.player.toolId) { // cursor
+
+  setTool(toolId = this.player.toolId) {
     return this.playerUpdate(undefined, undefined, undefined, toolId);
   }
-  /**
-   * 
-   * @param {number} chunkX 
-   * @param {number} chunkY 
-   * @param {Uint8ClampedArray} [data=Uint8ClampedArray[chunkSize * chunkSize * 3]] - chunk data to paste
-   */
+
   pasteChunk(chunkX = this.player.chunkX, chunkY = this.player.chunkY, data = new Uint8ClampedArray(chuchunk3)) {
     if (!isWSConnected(this.ws)) throw new Error(WEBSOCKET_IS_NOT_CONNECTED);
     if (!this.options.unsafe) {
@@ -412,29 +359,8 @@ class Client extends EventEmitter {
 
     this.ws.send(buf);
 
-    return true;
+    return this;
   }
-  /*updatePixel(x, y, color) {
-    const buf = BufferAllocUnsafe(clientOpcodes.setPixel);
-
-    buf.writeInt32LE(x);
-    buf.writeInt32LE(y, 4);
-
-    buf.writeUInt8(color[0], 8);
-    buf.writeUInt8(color[1], 9);
-    buf.writeUInt8(color[2], 10);
-
-    return buf;
-  }*/
-  /**
-   * 
-   * @param {number} x 
-   * @param {number} y 
-   * @param {Array} color 
-   * @param {boolean} wolfMove 
-   * @param {boolean} sneaky 
-   * @param {boolean} move 
-   */
   setPixel(x = this.player.x, y = this.player.y, color = this.player.color, wolfMove, sneaky, move = this.player.rank < 3) {
     if (!isWSConnected(this.ws)) throw new Error(WEBSOCKET_IS_NOT_CONNECTED);
     if (!this.options.unsafe) {
@@ -460,14 +386,9 @@ class Client extends EventEmitter {
 
     if (sneaky && oldX !== x && oldY !== y) this.move(oldX, oldY);
 
-    return true;
+    return this;
   }
-  /**
-   * 
-   * @param {number} chunkX 
-   * @param {number} chunkY 
-   * @param {boolean} newState 
-   */
+
   protectChunk(chunkX = this.player.chunkX, chunkY = this.player.chunkY, newState) {
     if (!isWSConnected(this.ws)) throw new Error(WEBSOCKET_IS_NOT_CONNECTED);
     if (!this.options.unsafe && this.player.rank >= 2) throw new Error(TOO_LOW_PERMISSION + "2");
@@ -480,16 +401,14 @@ class Client extends EventEmitter {
     buf.writeUInt8(newState, 8);
 
     this.ws.send(buf);
+
+    return this;
   }
-  /**
-   * 
-   * @param {number} chunkX 
-   * @param {number} chunkY 
-   * @param {Array} color 
-   */
+
   setChunkRGB(chunkX = this.player.chunkX, chunkY = this.player.chunkY, color = [255, 255, 255]) {
     if (!isWSConnected(this.ws)) throw new Error(WEBSOCKET_IS_NOT_CONNECTED);
-
+    if (!this.options.unsafe && this.player.rank >= 2) throw new Error(TOO_LOW_PERMISSION + "2");
+    
     if (this.options.protocol === 0) {
       if (color[0] === 255 && color[1] === 255 && color[2] === 255) { // clears chunk
         const buf = BufferAllocUnsafe(clientOpcodes.oldClearChunk);
@@ -499,7 +418,7 @@ class Client extends EventEmitter {
 
         this.ws.send(buf);
       } else {
-        return this.pasteChunk(chunkX, chunkY, createChunkFromRGB(color));
+        this.pasteChunk(chunkX, chunkY, createChunkFromRGB(color));
       }
     } else {
       const buf = BufferAllocUnsafe(clientOpcodes.setChunkRGB);
@@ -516,16 +435,10 @@ class Client extends EventEmitter {
 
     return true;
   }
-  /**
-   * requests and return
-   * 
-   * @async
-   * @param {number} chunkX 
-   * @param {number} chunkY 
-   */
+
   async requestChunk(chunkX = this.player.chunkX, chunkY = this.player.chunkY) { // async is here because if chunk is loaded bot.requestChunk(0, 0) would not be promise
     if (!isWSConnected(this.ws)) throw new Error(WEBSOCKET_IS_NOT_CONNECTED);
-    if (!this.options.unsafe && !isInsideWorldBorder(chunkX, chunkY)) throw new Error(REQUEST_CHUNK_OUTSIDE_WORLD_BORDER);
+    if (/*!this.options.unsafe && */!isInsideWorldBorder(chunkX, chunkY)) throw new Error(REQUEST_CHUNK_OUTSIDE_WORLD_BORDER);
 
     const key = chunkX + "," + chunkY;
 
@@ -551,21 +464,7 @@ class Client extends EventEmitter {
 
     return await chunk;
   }
-  /**
-   * Requests Area of chunks 
-   * 
-   * 
-   * @param {number} x1 
-   * @param {number} y1 
-   * @param {number} x2 
-   * @param {number} y2 
-   * 
-   * @example 
-   * bot.requestArea(0, 0, 23, 23)
-   * // will work same as 
-   * bot.requestArea(23, 23, 0, 0);
-   * @returns {Promise<Array<Chunk>>} Promise.all of all requested chunks
-   */
+
   requestArea(x1, y1, x2, y2) {
     x1 = x1 < x2 ? x1 : x2;
     y1 = y1 < y2 ? y1 : y2;
@@ -583,14 +482,7 @@ class Client extends EventEmitter {
     }
     return Promise.all(promises);
   }
-  /**
-   * Gets pixel from cache/server
-   * 
-   * @param {number} x 
-   * @param {number} y
-   * 
-   * @returns {Array} Returns pixel color 
-   */
+
   async getPixel(x = this.player.x, y = this.player.y) {
     const chunkX = floor(x / chunkSize);
     const chunkY = floor(y / chunkSize);
@@ -602,9 +494,8 @@ class Client extends EventEmitter {
 }
 
 
-// experiment so Client can be invoked without new
-const _Client = Client;
-Client = (options) => new _Client(options);
-Client.prototype = _Client.prototype;
+/*Client = (options) => new _Client(options);
+Client.prototype = _Client.prototype;*/
+Client.Client = Client;
 
 export default Client;

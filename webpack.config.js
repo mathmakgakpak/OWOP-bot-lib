@@ -1,7 +1,7 @@
 const path = require("path");
 const webpack = require('webpack');
 const fs = require('fs-extra');
-const JsDocPlugin = require("jsdoc-webpack-plugin")
+const JsDocPlugin = require("jsdoc-webpack-plugin");
 
 const packageJSON = require("./package.json");
 let version = packageJSON.version;
@@ -65,8 +65,25 @@ function genConfig(buildFor, isProductionBuild) {
             filename: `[name].${buildFor}${isProductionBuild ? ".min" : ""}.js`,
             path: path.resolve(__dirname, "build"),
             publicPath: isProductionBuild ? '/' : './',
-            library: "OWOPBotLib",
-            libraryTarget: "commonjs2"
+            //library: "OWOPBotLib",
+            libraryTarget: "commonjs-module",
+
+            environment: {
+                // The environment supports arrow functions ('() => { ... }').
+                arrowFunction: false,
+                // The environment supports BigInt as literal (123n).
+                bigIntLiteral: false,
+                // The environment supports const and let for variable declarations.
+                const: false,
+                // The environment supports destructuring ('{ a, b } = obj').
+                destructuring: false,
+                // The environment supports an async import() function to import EcmaScript modules.
+                dynamicImport: false,
+                // The environment supports 'for of' iteration ('for (const x of array) { ... }').
+                forOf: false,
+                // The environment supports ECMAScript Module syntax to import ECMAScript modules (import ... from '...').
+                module: false,
+            },
         },
         module: {
             rules: [
@@ -105,7 +122,7 @@ function genConfig(buildFor, isProductionBuild) {
 
     
     if(isNodeBuild) {
-        config.externals["isomorphic-ws"] = "commonjs2 isomorphic-ws";
+        config.externals["isomorphic-ws"] = "commonjs2 isomorphic-ws"; // i should throw it from there
 
         
 
@@ -118,6 +135,7 @@ function genConfig(buildFor, isProductionBuild) {
     } else {
         config.externals.ws = {};
 
+        // not used but ok \/
         config.resolve = {
             alias: { // https://github.com/webpack/webpack/issues/11282
                 assert: "assert",

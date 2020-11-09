@@ -2,66 +2,32 @@ import gameSettings from "./gameSettings.js";
 const chunkSize = gameSettings.chunkSize;
 
 const hypot = Math.hypot;
-/**
- * metters distance between two points.
- * @param {number} x1 - x1.
- * @param {number} y1 - y1.
- * @param {number} x2 - x2.
- * @param {number} y2 - y2.
- */
+
 export function distance(x1, y1, x2, y2) {
   return hypot(x2 - x1, y2 - y1);
 };
 
-/**
- * It allows you to explore/write buffer easier.
- * @constructor
- * @param {Buffer} buffer - node.js / browser buffer implementation buffer.
- */
-export class AutoOffsetBuffer { // not really only 2 methods
+
+export class AutoOffsetBuffer {
   constructor(buffer) {
     this.offset = 0;
     this.buffer = buffer;
   }
 
-  /**
-   * set uint
-   * 
-   * @param {number} value - value to write
-   * @param {number} [byteLength=1] - byteLength to write
-   * @param {?boolean} [littleEndian=true] - bytes saving type {@link https://en.wikipedia.org/wiki/Endianness (read this)}
-   * @param {?number} [offset=this.offset] - number of offset which it should write
-   * @param {?boolean} [addToOffset=true] - if it should set current offset to offset param's value + byteLength
-   */
   setUint(value, byteLength = 1, littleEndian = true, offset = this.offset, addToOffset = true) {
     if (littleEndian) this.buffer.writeUIntLE(value, offset, byteLength);
     else this.buffer.writeUIntBE(value, offset, byteLength);
 
     if (addToOffset) this.offset = offset + byteLength;
   }
-  /**
-   * set int
-   * 
-   * @param {number} value - value to write
-   * @param {?number} byteLength - byteLength to write
-   * @param {?boolean} littleEndian - bytes saving type {@link https://en.wikipedia.org/wiki/Endianness (read this)}
-   * @param {?number} offset - number of offset which it should write
-   * @param {?boolean} addToOffset - if it should set current offset to offset param's value + byteLength
-   */
+
   setInt(value, byteLength = 1, littleEndian = true, offset = this.offset, addToOffset = true) {
     if (littleEndian) this.buffer.writeIntLE(value, offset, byteLength);
     else this.buffer.writeIntBE(value, offset, byteLength);
 
     if (addToOffset) this.offset = offset + byteLength;
   }
-  /**
-   * get uint
-   * 
-   * @param {?number} byteLength - byteLength to read
-   * @param {?boolean} littleEndian - bytes saving type {@link https://en.wikipedia.org/wiki/Endianness (read this)}
-   * @param {?number} offset - number of offset which it should read
-   * @param {?boolean} addToOffset - if it should set current offset to offset param's value + byteLength
-   */
+
   getUint(byteLength = 1, littleEndian = true, offset = this.offset, addToOffset = true) {
     let data = littleEndian ? this.buffer.readUIntLE(offset, byteLength) :
       this.buffer.readUIntBE(offset, byteLength);
@@ -69,14 +35,7 @@ export class AutoOffsetBuffer { // not really only 2 methods
     if (addToOffset) this.offset = offset + byteLength;
     return data;
   }
-  /**
-   * get int
-   * 
-   * @param {?number} byteLength - byteLength to read
-   * @param {?boolean} littleEndian - bytes saving type {@link https://en.wikipedia.org/wiki/Endianness (read this)}
-   * @param {?number} offset - number of offset which it should read
-   * @param {?boolean} addToOffset - if it should set current offset to offset param's value + byteLength
-   */
+
   getInt(byteLength = 1, littleEndian = true, offset = this.offset, addToOffset = true) {
     let data = littleEndian ? this.buffer.readIntLE(offset, byteLength) :
       this.buffer.readIntBE(offset, byteLength);
@@ -250,13 +209,7 @@ export class Bucket {
     return true;
   }
 }
-/**
- * 
- * @param {number} x 
- * @param {number} y 
- * @param {number} w 
- * @param {boolean} alpha - is alpha 
- */
+
 export function getIbyXY(x, y, w, alpha) {
   return (y * w + x) * (alpha ? 4 : 3);
 }
@@ -269,15 +222,8 @@ export class ChunkSystem {
     this.chunkProtected = {};
   };
 
-  /**
-   * 
-   * @param {number} chunkX - 
-   * @param {number} chunkY 
-   * @param {Uint8ClampedArray} data 
-   */
-  setChunk(chunkX, chunkY, data) {
-    //if (!data || typeof chunkX !== "number" || typeof chunkY !== "number") throw new Error("chunkX or chunkY is not a number or no data!");
 
+  setChunk(chunkX, chunkY, data) {
     return this.chunks[chunkX + "," + chunkY] = data;
   };
   getChunk(chunkX, chunkY) {
@@ -287,7 +233,6 @@ export class ChunkSystem {
     return delete this.chunks[chunkX + "," + chunkY];
   };
   setPixel(x, y, color) {
-    //if (typeof rgb !== "object" || typeof chunkX !== "number" || typeof chunkY !== "number") throw new Error("chunkX or chunkY is not a number or rgb is not array!");
     const chunkX = floor(x / chunkSize);
     const chunkY = floor(y / chunkSize);
 
@@ -306,7 +251,6 @@ export class ChunkSystem {
     
   }
   getPixel(x, y) {
-    //if (typeof x !== "number" || typeof y !== "number") throw new Error("x or y is not a number!");
     const chunkX = floor(x / chunkSize);
     const chunkY = floor(y / chunkSize);
 
@@ -318,8 +262,6 @@ export class ChunkSystem {
     }
   };
   setChunkProtection(chunkX, chunkY, newState) {
-    //if (typeof chunkX !== "number" || typeof chunkY !== "number") throw new Error("chunkX or chunkY is not a number!");
-
     if (newState) {
       return this.chunkProtected[chunkX + "," + chunkY] = true;
     } else {
@@ -328,18 +270,10 @@ export class ChunkSystem {
     }
   }
   isProtected(chunkX, chunkY) {
-    //if (typeof chunkX !== "number" || typeof chunkY !== "number") throw new Error("chunkX or chunkY is not a number!");
     return !!this.chunkProtected[chunkX + "," + chunkY];
   }
 }
 
-/*export class World extends ChunkSystem {
-  constructor(name = "main") {
-    this.name = name;
-
-    this.players = {};
-  }
-}*/
 
 export function decompress(u8arr) {
   var originalLength = u8arr[1] << 8 | u8arr[0];
@@ -398,29 +332,6 @@ export function reverseObject(obj) {
   return reversedObject;
 }
 
-/*export const aggregation = (baseClass, ...mixins) => {
-  class base extends baseClass {
-      constructor (...args) {
-          super(...args);
-          mixins.forEach((mixin) => {
-              copyProps(this,(new mixin));
-          });
-      }
-  }
-  let copyProps = (target, source) => {  // this function copies all properties and symbols, filtering out some special ones
-      Object.getOwnPropertyNames(source)
-            .concat(Object.getOwnPropertySymbols(source))
-            .forEach((prop) => {
-               if (!prop.match(/^(?:constructor|prototype|arguments|caller|name|bind|call|apply|toString|length)$/))
-                  Object.defineProperty(target, prop, Object.getOwnPropertyDescriptor(source, prop));
-             })
-  }
-  mixins.forEach((mixin) => { // outside contructor() to allow aggregation(A,B,C).staticFunction() to be called etc.
-      copyProps(base.prototype, mixin.prototype);
-      copyProps(base, mixin);
-  });
-  return base;
-}*/
 export const deepClone = (inObject) => {
   if (typeof inObject !== "object" || inObject === null) {
     return inObject;
@@ -439,12 +350,7 @@ export const deepClone = (inObject) => {
 let a = gameSettings.worldBorder;
 let b = ~a;
 
-/**
- * Checks if x and y are inside world Border
- * 
- * @param {number} x 
- * @param {number} y 
- */
+
 export function isInsideWorldBorder(x, y) {
   return x <= a && y <= a && x >= b && y >= b;
 }

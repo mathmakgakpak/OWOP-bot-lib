@@ -1,6 +1,6 @@
 *
-#!LICENSE it will not be ignored anyways
 !build/index.NodeJS.js
 !build/index.NodeJS.min.js
 !build/index.browser.js
 !build/index.browser.min.js
+!esmodule.mjs
