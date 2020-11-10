@@ -112,16 +112,14 @@ class Client extends EventEmitter {
             let newPlayers = [];
             for (let i = 0; i < count; i++) { // player updates
               let id = ab.readUInt(4); // player id
-              //let isNew = false;
               if (!this.players[id]) {
-                //isNew = true;
-                this.players[id] = {
+                newPlayers.push(this.players[id] = {
                   id,
                   nick: "",
                   rank: 0,
                   color: new Uint8ClampedArray(3),
-                }
-                newPlayers.push(id);
+                });
+                
               }
               let player = updatedPlayers[id] = this.players[id];
 
@@ -433,7 +431,7 @@ class Client extends EventEmitter {
       this.ws.send(buf);
     }
 
-    return true;
+    return this;
   }
 
   async requestChunk(chunkX = this.player.chunkX, chunkY = this.player.chunkY) { // async is here because if chunk is loaded bot.requestChunk(0, 0) would not be promise

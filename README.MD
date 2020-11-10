@@ -14,14 +14,14 @@ bot.on("join", console.log) // logs id
 ```
 OPM (the library is not published on opm yet)
 ```js 
-const { Client } = OPM.require("owop-bot-lib"); // Client
+const { createClient } = OPM.require("owop-bot-lib"); // Client
 
-const bot = new Client();
+const bot = createClient();
 bot.on("join", console.log) // logs id 
 ```
 you can also import owop-bot-lib using es modules
 ```js
-import { Client } from "owop-bot-lib";
+import { createClient } from "owop-bot-lib";
 ```
 
 ## possible Client.options
@@ -47,7 +47,7 @@ autoConnectWorld:  true, // should connect to world after it gets 3rd captcha st
 wsOptions: {
 origin:  "https://ourworldofpixels.com"
 },
-protocol:  1, // 0 - bop it OWOP 1 - original owop and my latest server
+protocol:  1, // 0 - bop it OWOP 1 - original owop and my latest OWOP server
 worldName:  "main",
 worldVerification:  gameSettings.misc.worldVerification // world verification code default 25565
 }*/
@@ -88,25 +88,25 @@ moves bot
 example in player update
 ## setColor(color: anyTypeOfArray = this.player.color) => this
 example in player update
-## setTool(toolId: number = this.player.toolId) => boolean
+## setTool(toolId: number = this.player.toolId) => this
 example in player update
 ## pasteChunk(chunkX: number = this.player.chunkX, chunkY: number = this.player.chunkY, data: Uint8Array = new Uint8ClampedArray(chunkSize * chunkSize * 3))
 
-## setPixel(x: number = this.player.x, y: number = this.player.y, color: ArrayLike = this.player.color, wolfMove: boolean, sneaky: boolean, move: boolean = this.player.rank < 3)
+## setPixel(x: number = this.player.x, y: number = this.player.y, color: ArrayLike = this.player.color, wolfMove: boolean, sneaky: boolean, move: boolean = this.player.rank < 3) => this
 Sets pixel on x y with color
 TO-DO explain what is wolfMove, sneaky, move
-## procetChunk(chunkX: number = this.player.chunkX, chunkY: number = this.player.chunkY, newState: boolean)
+## procetChunk(chunkX: number = this.player.chunkX, chunkY: number = this.player.chunkY, newState: boolean) => this
 protects chunk required rank 2
 
 ```js
 client.protectChunk(10, 12, true);
 ```
 
-## setChunkRGB(chunkX: number = this.player.chunkX, chunkY: number = this.player.chunkY, color: ArrayLike = [255, 255, 255])
+## setChunkRGB(chunkX: number = this.player.chunkX, chunkY: number = this.player.chunkY, color: ArrayLike = [255, 255, 255]) => this
 sets chunk with color
 
 
-## async requestChunk(chunkX: number = this.player.chunkX, chunkY: number = this.player.chunkY) => Promise<Uint8Array>
+## async requestChunk(chunkX: number = this.player.chunkX, chunkY: number = this.player.chunkY) => Promise\<Uint8Array\>
 Uint8Array is chunk\
 
 you can request as much times as you want one chunk and it will ask the server only once for chunk
@@ -115,7 +115,7 @@ you can request as much times as you want one chunk and it will ask the server o
 client.requestChunk(0, 0); // requestChunk always returns a Promise which resolves Uint8Array(chunkSize * chunkSize * 3) or error
 ```
 
-## async requestArea(chunkX1: number, chunkY1: number, chunkX2: number, chunkY2: number) => Promise<Array<Uint8Array>>
+## async requestArea(chunkX1: number, chunkY1: number, chunkX2: number, chunkY2: number) => Promise\<Array\<Uint8Array\>\>
 read requestChunk
 
 ## async getPixel(x: number = this.player.x, y: number = this.player.y) => Promise<Array>

@@ -1,3 +1,4 @@
+
 //export const { build, version, buildFor, isNodeBuild } = process.env; // uhh there is a bug it does process$env = process.env and doesn't even add process polyfill
 
 export const build = process.env.build, 
@@ -8,10 +9,11 @@ isNodeBuild = process.env.isNodeBuild;
 // remember use global instead of window in webpack
 
 
+import Client from "./Client";
+export { Client };
+export { default as gameSettings } from "./gameSettings";
 export * as utils from "./utils";
 export * as errorsList from "./errorsList";
-export { default as Client } from "./Client";
-export { default as gameSettings } from "./gameSettings";
 export { default as WebSocket } from "isomorphic-ws";
 export { default as EventEmitter } from "events";
 export { default as Buffer } from "buffer";

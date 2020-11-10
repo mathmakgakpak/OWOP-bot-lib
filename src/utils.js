@@ -1,5 +1,6 @@
-import gameSettings from "./gameSettings.js";
-const chunkSize = gameSettings.chunkSize;
+import { default as gameSettings, reverseObject } from "./gameSettings.js";
+
+export { reverseObject };
 
 const hypot = Math.hypot;
 
@@ -174,12 +175,6 @@ AutoOffsetBuffer.prototype.readInt = AutoOffsetBuffer.prototype.getInt;
 
 
 export class Bucket {
-  /**
-   * 
-   * @param {number} rate 
-   * @param {number} per 
-   * @param {boolean} infinite 
-   */
   constructor(rate, per, infinite) {
     //infinite = per === 0 && rate > 0;
 
@@ -215,66 +210,6 @@ export function getIbyXY(x, y, w, alpha) {
 }
 const floor = Math.floor;
 
-
-export class ChunkSystem {
-  constructor() {
-    this.chunks = {};
-    this.chunkProtected = {};
-  };
-
-
-  setChunk(chunkX, chunkY, data) {
-    return this.chunks[chunkX + "," + chunkY] = data;
-  };
-  getChunk(chunkX, chunkY) {
-    return this.chunks[chunkX + "," + chunkY];
-  };
-  removeChunk(chunkX, chunkY) {
-    return delete this.chunks[chunkX + "," + chunkY];
-  };
-  setPixel(x, y, color) {
-    const chunkX = floor(x / chunkSize);
-    const chunkY = floor(y / chunkSize);
-
-    const chunk = this.getChunk(chunkX, chunkY);
-
-    if (chunk) {
-      const i = getIbyXY(x & chunkSize - 1, y & chunkSize - 1, chunkSize);
-
-      chunk[i] = color[0];
-      chunk[i + 1] = color[1];
-      chunk[i + 2] = color[2];
-
-      return true;
-    }
-
-    
-  }
-  getPixel(x, y) {
-    const chunkX = floor(x / chunkSize);
-    const chunkY = floor(y / chunkSize);
-
-    const chunk = this.getChunk(chunkX, chunkY);
-
-    if (chunk) {
-      const i = getIbyXY(x & chunkSize - 1, y & chunkSize - 1, chunkSize);
-      return [chunk[i], chunk[i + 1], chunk[i + 2]];
-    }
-  };
-  setChunkProtection(chunkX, chunkY, newState) {
-    if (newState) {
-      return this.chunkProtected[chunkX + "," + chunkY] = true;
-    } else {
-      delete this.chunkProtected[chunkX + "," + chunkY]
-      return false;
-    }
-  }
-  isProtected(chunkX, chunkY) {
-    return !!this.chunkProtected[chunkX + "," + chunkY];
-  }
-}
-
-
 export function decompress(u8arr) {
   var originalLength = u8arr[1] << 8 | u8arr[0];
   var u8decompressedarr = new Uint8ClampedArray(originalLength);
@@ -304,10 +239,64 @@ export function decompress(u8arr) {
   }
   return u8decompressedarr;
 }
+const chunkSize = gameSettings.chunkSize;
+export class ChunkSystem {
+  constructor() {
+    this.chunks = {};
+    this.chunkProtected = {};
+  };
 
+  setChunk(chunkX, chunkY, data) {
+    return this.chunks[chunkX + "," + chunkY] = data;
+  };
+  getChunk(chunkX, chunkY) {
+    return this.chunks[chunkX + "," + chunkY];
+  };
+  removeChunk(chunkX, chunkY) {
+    return delete this.chunks[chunkX + "," + chunkY];
+  };
+  setPixel(x, y, color) {
+    const chunkX = floor(x / chunkSize);
+    const chunkY = floor(y / chunkSize);
+
+    const chunk = this.getChunk(chunkX, chunkY);
+
+    if (chunk) {
+      const i = getIbyXY(x & chunkSize - 1, y & chunkSize - 1, chunkSize);
+
+      chunk[i] = color[0];
+      chunk[i + 1] = color[1];
+      chunk[i + 2] = color[2];
+
+      return true;
+    }
+  }
+  getPixel(x, y) { // not used
+    const chunkX = floor(x / chunkSize);
+    const chunkY = floor(y / chunkSize);
+
+    const chunk = this.getChunk(chunkX, chunkY);
+
+    if (chunk) {
+      const i = getIbyXY(x & chunkSize - 1, y & chunkSize - 1, chunkSize);
+      return [chunk[i], chunk[i + 1], chunk[i + 2]];
+    }
+  };
+  setChunkProtection(chunkX, chunkY, newState) {
+    if (newState) {
+      return this.chunkProtected[chunkX + "," + chunkY] = true;
+    } else {
+      delete this.chunkProtected[chunkX + "," + chunkY]
+      return false;
+    }
+  }
+  isProtected(chunkX, chunkY) {
+    return !!this.chunkProtected[chunkX + "," + chunkY];
+  }
+}
 export function createChunkFromRGB(color) {
   let tile = new Uint8ClampedArray(chunkSize * chunkSize * 3);
-  for (var i = 0; i < tile.length;) {
+  for (let i = 0; i < tile.length;) {
     tile[i++] = color[0];
     tile[i++] = color[1];
     tile[i++] = color[2];
@@ -324,13 +313,7 @@ export function isWSConnected(ws) {
   return ws && ws.readyState === 1;
 }
 
-export function reverseObject(obj) {
-  const reversedObject = {};
 
-  for (let i in obj) reversedObject[obj[i]] = i;
-
-  return reversedObject;
-}
 
 export const deepClone = (inObject) => {
   if (typeof inObject !== "object" || inObject === null) {

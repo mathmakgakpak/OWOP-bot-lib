@@ -1,4 +1,10 @@
-import { reverseObject } from "./utils";
+export function reverseObject(obj) {
+  const reversedObject = {};
+
+  for (let i in obj) reversedObject[obj[i]] = i;
+
+  return reversedObject;
+}
 
 const gameSettings = {
   maxStoredMessages: 100,
@@ -46,6 +52,7 @@ const gameSettings = {
       paste:
         4 + // chunk x
         4   // chunk y
+        // chunkSize * chunkSize * 3 // data // it is at the bottom
     },
     server: {
       setId: 0,
