@@ -27,7 +27,7 @@ module.exports = [(env = "development") => {
     const isProductionBuild = env === "production";
     const buildFor = "NodeJS";
 
-    if (isProductionBuild) packageJSON.version = version = addToVersion(version);
+    //if (isProductionBuild) packageJSON.version = version = addToVersion(version);
     packageJSON.build = ++build;
 
     fs.writeFileSync("./package.json", JSON.stringify(packageJSON, null, 2));
