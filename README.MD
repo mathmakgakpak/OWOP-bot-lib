@@ -4,6 +4,13 @@ OWOP - [Our World Of Pixels](https://ourworldofpixels.com/)
 \
 docs are not fully finished
 
+# TO-DO
+Finish the docs
+Split readme to docs and readme
+Make version without errors when someone e.g. will send message without having enough chat quota
+Remove AutoOffsetBufffer
+
+# Docs
 # Client
 Client extends [EventEmitter](https://nodejs.org/api/events.html)
 Node.js
@@ -119,5 +126,5 @@ client.requestChunk(0, 0); // requestChunk always returns a Promise which resolv
 read requestChunk
 
 ## async getPixel(x: number = this.player.x, y: number = this.player.y) => Promise<Array>
-returns array with array [R, G, B]
+returns array with colors [R, G, B]
 

@@ -72,7 +72,7 @@ class Client extends EventEmitter {
   }
 
   makeSocket() {
-    this.ws = new WS(this.options.wsUrl, process.env.isNodeBuild ? this.options.wsOptions : undefined);
+    this.ws = new WS(this.options.wsUrl, this.options.wsOptions);
 
     if (!process.env.isNodeBuild) this.ws.binaryType = "arraybuffer";
 
@@ -83,14 +83,18 @@ class Client extends EventEmitter {
     this.ws.onmessage = this.messageHandler.bind(this);
   }
   messageHandler(message) {
-    const data = message.data; // ArrayBuffer || buffer || string
+    const data = message.data;
+    /*
+      On Nodejs it is buffer or string but on browser it is ArrayBuffer or string
+    */
 
     if (typeof data === "string") {
       this.messages.push(data);
       if (this.messages.length > gameSettings.maxStoredMessages) this.messsages.shift();
+
       this.emit("message", data);
     } else {
-      const buf = process.env.isNodeBuild ? data : BufferFrom(data); // buffer from cuz it sends array buffer
+      const buf = process.env.isNodeBuild ? data : BufferFrom(data);
       this.emit("rawMessage", buf);
 
       switch (buf.readUInt8(0)) {
@@ -101,7 +105,7 @@ class Client extends EventEmitter {
           this.emit("join", this.player.id = buf.readUInt32LE(1));
           break;
         }
-        case serverOpCodes.worldUpdate: { // to do change it to normal buffer
+        case serverOpCodes.worldUpdate: { // to do change it to normal buffer because it is slow
           //break;
           const ab = new AutoOffsetBuffer(buf);
           ab.offset++;
@@ -145,7 +149,7 @@ class Client extends EventEmitter {
 
             for (let i = 0; i < count; i++) { // pixel updates
               let pixel = {};
-              if (this.options.protocol === 1) pixel.id = ab.readUInt(4); // player which set pixel id
+              if (this.options.protocol === 1) pixel.id = ab.readUInt(4); // id of player which set the pixel
               pixel.x = ab.readInt(4); // pixel x
               pixel.y = ab.readInt(4); // y
               pixel.color = [ab.readUInt(), ab.readUInt(), ab.readUInt()];
@@ -224,6 +228,7 @@ class Client extends EventEmitter {
         case serverOpCodes.setPQuota: {
           const rate = buf.readUInt16LE(1);
           const per = buf.readUInt16LE(3);
+          
           const bucket = this.player.pixelBucket;
 
           bucket.rate = rate;
