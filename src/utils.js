@@ -310,7 +310,7 @@ export function shouldMove(x1, y1, x2, y2) {
 }
 
 export function isWSConnected(ws) {
-  return ws && ws.readyState === 1;
+  return ws?.readyState === 1;
 }
 
 
@@ -349,7 +349,7 @@ export function isInsideWorldBorder(x, y) {
  * 
  * @returns {array} ?user(Object)[?id, rank, nick], ?message (string), ?is tellMessage (boolean), original message (string)
  */
-export function parseMessage(msg) { // maybe someone will use it
+export function parseMessage(msg) { // TO-DO Rewrite it
   let something = msg.split(": ");
 
   if (

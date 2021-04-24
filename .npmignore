@@ -3,4 +3,6 @@
 !build/index.NodeJS.min.js
 !build/index.browser.js
 !build/index.browser.min.js
+!build/index.browser.outsideWebpack.min.js
+!build/index.browser.outsideWebpack.js
 !esmodule.mjs

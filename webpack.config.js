@@ -1,7 +1,7 @@
 const path = require("path");
 const webpack = require('webpack');
 const fs = require('fs-extra');
-const JsDocPlugin = require("jsdoc-webpack-plugin");
+//const JsDocPlugin = require("jsdoc-webpack-plugin");
 
 const packageJSON = require("./package.json");
 let version = packageJSON.version;
@@ -22,9 +22,10 @@ function addToVersion(version, number = 1) { // dumb
 }
 
 const srcDir = path.resolve(__dirname, "src");
-
-module.exports = [(env = "development") => {
-    const isProductionBuild = env === "production";
+let isProductionBuild;
+module.exports = [
+env => { // NodeJS
+    isProductionBuild = env.production || false;
     const buildFor = "NodeJS";
 
     //if (isProductionBuild) packageJSON.version = version = addToVersion(version);
@@ -33,26 +34,44 @@ module.exports = [(env = "development") => {
     fs.writeFileSync("./package.json", JSON.stringify(packageJSON, null, 2));
 
     
-    const config = genConfig(buildFor, isProductionBuild);
+    const config = genConfig(isProductionBuild, buildFor);
 
-    if(/*isProductionBuild || */env.devclean) {
+    if(isProductionBuild || env.devclean) {
         console.log(`Cleaning build dir: '${config.output.path}'`);
         fs.removeSync(config.output.path);
     }
 
     return config;
-}, (env = "development") => {
-    const isProductionBuild = env === "production";
+}, env => { // Browser 
     const buildFor = "browser";
-    const config = genConfig(buildFor, isProductionBuild);
+
+    const config = genConfig(isProductionBuild, buildFor);
+
+    return config;
+}, env => { // Browser outside Webpack
+    const buildFor = "browser";
+    const buildForOutsideOfWebpack = true;
+
+    const config = genConfig(isProductionBuild, buildFor, buildForOutsideOfWebpack);
 
     console.log(`${config.mode} build\nVersion: ${version}\nBuild: ${build}\n`);
 
     return config;
-}];
+}
+];
 
-function genConfig(buildFor, isProductionBuild) {
+function genConfig(isProductionBuild, buildFor, buildForOutsideOfWebpack = false) {
     const isNodeBuild = buildFor === "NodeJS";
+    
+    const options = { // process.env and ifdef options
+        isProductionBuild,
+        build,
+        version,
+        buildFor,
+        isNodeBuild,
+        buildForOutsideOfWebpack
+    };
+
     const config = {
         target: isNodeBuild ? "node" : "web",
         mode: isProductionBuild ? "production" : "development",
@@ -62,11 +81,12 @@ function genConfig(buildFor, isProductionBuild) {
             index: path.resolve(srcDir, "index.js")
         },
         output: {
-            filename: `[name].${buildFor}${isProductionBuild ? ".min" : ""}.js`,
+            filename: `[name].${buildFor}${buildForOutsideOfWebpack ? ".outsideWebpack" : ""}${isProductionBuild ? ".min" : ""}.js`,
             path: path.resolve(__dirname, "build"),
             publicPath: isProductionBuild ? '/' : './',
-            //library: "OWOPBotLib",
-            libraryTarget: "commonjs-module",
+            library: {
+                type: "commonjs-module",
+            },
 
             environment: {
                 // The environment supports arrow functions ('() => { ... }').
@@ -90,25 +110,21 @@ function genConfig(buildFor, isProductionBuild) {
 				 {
 				  include: srcDir,
 				//exclude: path.resolve(__dirname, "node_modules"),
-				  use: {
+				  use: [{
 					loader: 'babel-loader',
 					options: { // .babelrc
                         "presets": ["@babel/preset-env"],
                         "plugins": ["@babel/plugin-proposal-export-namespace-from", "@babel/plugin-proposal-class-properties", "@babel/plugin-transform-runtime"]
                       }
-				  }
+				  },
+                  { loader: "ifdef-loader", options } 
+                ]
 				}
             ]
         },
     
         plugins: [
-            new webpack.EnvironmentPlugin({
-                isProductionBuild,
-                build,
-                version,
-                buildFor,
-                isNodeBuild
-            }),
+            new webpack.EnvironmentPlugin(options),
             new webpack.BannerPlugin({
                 banner: `Bot library for OWOP (our world of pixels)
 
@@ -120,9 +136,13 @@ function genConfig(buildFor, isProductionBuild) {
         externals: {}
     };
 
-    
+    if(buildForOutsideOfWebpack) {
+        config.output.library.type = "var";
+        config.output.library.name = "OWOPBotLib";
+    }
+
     if(isNodeBuild) {
-        config.externals["isomorphic-ws"] = "commonjs2 isomorphic-ws"; // i should throw it from there
+        config.externals["isomorphic-ws"] = "commonjs2 isomorphic-ws"; // i should remove it
 
         
 

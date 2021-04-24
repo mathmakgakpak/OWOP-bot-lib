@@ -202,15 +202,15 @@ class Client extends EventEmitter {
           this.emit("rank", rank);
 
           const quota = gameSettings.chatQuota[rank];
-          const bucket = this.player.chatBucket;
+          const chatBucket = this.player.chatBucket;
 
-          bucket.rate = quota[0];
-          bucket.per = quota[1];
-          //bucket.allowance = 0; // idk if it restarts every set rank but i think that it does not
+          chatBucket.rate = quota[0];
+          chatBucket.per = quota[1];
+          // bucket.allowance = 0; // idk if it restarts every set rank but i think that it does not
 
-          bucket.infinite = this.player.pixelBucket.infinite = rank === 3;
+          // chatBucket.infinite = this.player.pixelBucket.infinite = rank === 3;
 
-          this.emit("setChatBucket", bucket);
+          this.emit("setChatBucket", chatBucket);
           break;
         }
         case serverOpCodes.captcha: {
@@ -472,10 +472,10 @@ class Client extends EventEmitter {
     //let chunksLasted = (x2 - x1 + 1) * (y2 - y1 + 1);
 
     const promises = [];
-    const a = this.requestChunk;
+    const requestChunk = this.requestChunk;
     for (let x = x1; x <= x2; x++) {
       for (let y = y1; y <= y2; y++) {
-        promises.push(a(x, y));
+        promises.push(requestChunk(x, y));
       }
     }
     return Promise.all(promises);
